@@ -4,13 +4,14 @@ from time import sleep
 
 class Player:
 
-    def __init__(self, name='Dylan', money=200):
+    def __init__(self, name, money=200):
         self.name = name
         self.money = money
-        self.cards = []  # (suit, number)
+        self.cards = []  # [suit, number]
         self.current_hand = []  # number only
         self.win = 0
         self.high_score = 0
+        self.test = []
 
     def set_up(self, deck):
         self.current_hand = []
@@ -53,58 +54,71 @@ class Player:
                 break
         return bet
 
-    def check_blackjack(self, bet=0):
+    def check_blackjack(self, bet=0, display=True):
         if len(self.current_hand) == 2:
             if 'Ace' in self.current_hand and 10 in self.current_hand:
-                print('BlackJack!\nYou win {bet}'.format(bet=bet*2))
+                self.current_hand = [21]
                 self.win += 1
                 self.high_score += 1
-                if self.win >= self.high_score:
-                    print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
+                if display:
+                    print('BlackJack!\nYou win {bet}'.format(bet=bet * 2))
+                    if self.win >= self.high_score:
+                        print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
                 self.money += bet * 2
                 return False
             elif 'Ace' in self.current_hand and 'Queen' in self.current_hand:
-                print('BlackJack!\nYou win {bet}'.format(bet=bet*2))
+                self.current_hand = [21]
                 self.win += 1
                 self.high_score += 1
-                if self.win >= self.high_score:
-                    print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
+                print('BlackJack!\nYou win {bet}'.format(bet=bet * 2))
+                if display:
+                    if self.win >= self.high_score:
+                        print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
                 self.money += bet * 2
                 return False
             elif 'Ace' in self.current_hand and 'King' in self.current_hand:
-                print('BlackJack!\nYou win {bet}'.format(bet=bet*2))
+                self.current_hand = [21]
                 self.win += 1
                 self.high_score += 1
-                if self.win >= self.high_score:
-                    print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
+                if display:
+                    print('BlackJack!\nYou win {bet}'.format(bet=bet * 2))
+                    if self.win >= self.high_score:
+                        print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
                 self.money += bet * 2
                 return False
             elif 'Ace' in self.current_hand and 'Jack' in self.current_hand:
-                print('BlackJack!\nYou win {bet}'.format(bet=bet*2))
+                self.current_hand = [21]
                 self.win += 1
                 self.high_score += 1
-                if self.win >= self.high_score:
-                    print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
+                if display:
+                    print('BlackJack!\nYou win {bet}'.format(bet=bet * 2))
+                    if self.win >= self.high_score:
+                        print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
                 self.money += bet * 2
                 return False
         return True
 
-    def check_cards(self):  # TODO if two aces come out FIX
-        for number in self.current_hand:
-            index = self.current_hand.index(number)
-            if number == "Ace":
-                self.display_cards()
-                answer = ""
-                while answer != 11 and answer != 1:
-                    try:
-                        answer = int(input('Choose a value of 11 or 1 for your Ace'))
-                    except ValueError:
-                        print('Must chose 1 or 11')
-                self.current_hand.remove(number)
-                self.current_hand.insert(index, answer)
-            if number == 'Queen' or number == 'Jack' or number == 'King':
-                self.current_hand.remove(number)
-                self.current_hand.insert(index, 10)
+    def check_cards(self, deck, bet):
+        if len(self.current_hand) == 1:  # Check for one card meaning cards were split
+            self.draw_card(deck, display=True)
+            if not self.check_blackjack(bet, display=True):
+                    return False
+        self.current_hand = []
+        for number in self.cards:
+            if number[1] == 'Ace':
+                continue
+            else:
+                self.current_hand.append(deck.values[number[1]])
+        for number in self.cards:
+            if number[1] == 'Ace':
+                if sum(self.current_hand) >= 11:
+                    self.current_hand.append(deck.values[number[1]][0])
+                else:
+                    self.display_cards()
+                    print('Current total is {total} '.format(total=sum(self.current_hand)))
+                    answer = int(input('Would you like your ace to be an 11 or 1? '))
+                    number[1] = answer
+                    self.current_hand.append(answer)
         total = sum(self.current_hand)
         if total == 21:
             self.display_cards()
@@ -112,7 +126,7 @@ class Player:
             sleep(2)
             return False
         elif total > 21:
-            print('Bust!\nYou had {total}'.format(total=total))
+            print('Bust!\nYou had {total}\n'.format(total=total))
             return False
         else:
             self.display_cards()
@@ -126,6 +140,11 @@ class Player:
         if answer == 'h':
             card_suit, card_number = self.draw_card(deck)
             print('{number} of {suit}\n'.format(suit=card_suit, number=card_number))
+            return True
+        return False
+
+    def check_split(self):
+        if self.current_hand.count(self.current_hand[0]) == 2:
             return True
         return False
 
@@ -238,6 +257,9 @@ class Deck:
                       'spades': [2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King', 'Ace'],
                       'hearts': [2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King', 'Ace'],
                       'diamonds': [2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King', 'Ace']}
+
+        self.values = {2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10, 11: 11,
+                       'Jack': 10, 'Queen': 10, 'King': 10, 'Ace': [1, 11]}
 
     def check_deck(self):
         for number, suit in self.cards.items():
