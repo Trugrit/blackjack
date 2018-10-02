@@ -4,10 +4,10 @@ from time import sleep
 
 class Player:
 
-    def __init__(self, name='Dylan', money=200):
+    def __init__(self, name, money=200):
         self.name = name
         self.money = money
-        self.cards = []  # (suit, number)
+        self.cards = []  # [suit, number]
         self.current_hand = []  # number only
         self.win = 0
         self.high_score = 0
@@ -53,43 +53,51 @@ class Player:
                 break
         return bet
 
-    def check_blackjack(self, bet=0):
+    def check_blackjack(self, bet=0, display=True):
         if len(self.current_hand) == 2:
             if 'Ace' in self.current_hand and 10 in self.current_hand:
                 print('BlackJack!\nYou win {bet}'.format(bet=bet*2))
                 self.win += 1
                 self.high_score += 1
-                if self.win >= self.high_score:
-                    print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
+                if display:
+                    if self.win >= self.high_score:
+                        print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
                 self.money += bet * 2
                 return False
             elif 'Ace' in self.current_hand and 'Queen' in self.current_hand:
                 print('BlackJack!\nYou win {bet}'.format(bet=bet*2))
                 self.win += 1
                 self.high_score += 1
-                if self.win >= self.high_score:
-                    print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
+                if display:
+                    if self.win >= self.high_score:
+                        print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
                 self.money += bet * 2
                 return False
             elif 'Ace' in self.current_hand and 'King' in self.current_hand:
                 print('BlackJack!\nYou win {bet}'.format(bet=bet*2))
                 self.win += 1
                 self.high_score += 1
-                if self.win >= self.high_score:
-                    print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
+                if display:
+                    if self.win >= self.high_score:
+                        print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
                 self.money += bet * 2
                 return False
             elif 'Ace' in self.current_hand and 'Jack' in self.current_hand:
                 print('BlackJack!\nYou win {bet}'.format(bet=bet*2))
                 self.win += 1
                 self.high_score += 1
-                if self.win >= self.high_score:
-                    print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
+                if display:
+                    if self.win >= self.high_score:
+                        print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
                 self.money += bet * 2
                 return False
         return True
 
-    def check_cards(self):  # TODO if two aces come out FIX
+    def check_cards(self, deck=None, bet=None):  # TODO if two aces come out FIX
+        if len(self.current_hand) == 1:
+            self.draw_card(deck, display=True)
+            if not self.check_blackjack(bet, display=True):
+                return False
         for number in self.current_hand:
             index = self.current_hand.index(number)
             if number == "Ace":
