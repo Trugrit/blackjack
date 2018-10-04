@@ -29,12 +29,16 @@ class Player:
         self.cards.append([random_suit, random_number])
         self.current_hand.append(random_number)
         if display:
-            print('{name} draws {number} of {suit}'.format(name=self.name, number=random_number, suit=random_suit))
+            print('--------------------------------')
+            print('{name} draws {number} of {suit}\n'.format(name=self.name, number=random_number, suit=random_suit))
         return random_suit, random_number
 
     def display_cards(self):
-        print("{name}'s cards are".format(name=self.name))
+        print('-------------------------')
+        print("{name}'s cards are\n".format(name=self.name))
         for card in self.cards:
+            if card[1] == 11 or card[1] == 1:
+                print('{number} of {suit}'.format(number='Ace', suit=card[0]))
             print('{number} of {suit}'.format(number=card[1], suit=card[0]))
 
     def player_bet(self):
@@ -61,19 +65,21 @@ class Player:
                 self.win += 1
                 self.high_score += 1
                 if display:
-                    print('BlackJack!\nYou win {bet}'.format(bet=bet * 2))
+                    print('BlackJack!\n\nYou win {bet}\n'.format(bet=bet * 2))
                     if self.win >= self.high_score:
                         print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
+                print('-------------------------')
                 self.money += bet * 2
                 return False
             elif 'Ace' in self.current_hand and 'Queen' in self.current_hand:
                 self.current_hand = [21]
                 self.win += 1
                 self.high_score += 1
-                print('BlackJack!\nYou win {bet}'.format(bet=bet * 2))
+                print('BlackJack!\n\nYou win {bet}\n'.format(bet=bet * 2))
                 if display:
                     if self.win >= self.high_score:
                         print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
+                print('-------------------------')
                 self.money += bet * 2
                 return False
             elif 'Ace' in self.current_hand and 'King' in self.current_hand:
@@ -81,9 +87,10 @@ class Player:
                 self.win += 1
                 self.high_score += 1
                 if display:
-                    print('BlackJack!\nYou win {bet}'.format(bet=bet * 2))
+                    print('BlackJack!\n\nYou win {bet}\n'.format(bet=bet * 2))
                     if self.win >= self.high_score:
                         print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
+                print('-------------------------')
                 self.money += bet * 2
                 return False
             elif 'Ace' in self.current_hand and 'Jack' in self.current_hand:
@@ -91,14 +98,17 @@ class Player:
                 self.win += 1
                 self.high_score += 1
                 if display:
-                    print('BlackJack!\nYou win {bet}'.format(bet=bet * 2))
+                    print('BlackJack!\n\nYou win {bet}\n'.format(bet=bet * 2))
                     if self.win >= self.high_score:
                         print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
+                print('-------------------------')
                 self.money += bet * 2
                 return False
         return True
 
     def check_cards(self, deck, bet):
+        sleep(2)
+        print('-------------------------')
         if len(self.current_hand) == 1:  # Check for one card meaning cards were split
             self.draw_card(deck, display=True)
             if not self.check_blackjack(bet, display=True):
@@ -118,19 +128,27 @@ class Player:
                     print('Current total is {total} '.format(total=sum(self.current_hand)))
                     answer = int(input('Would you like your ace to be an 11 or 1? '))
                     number[1] = answer
+                    self.clear()
+                    sleep(2)
                     self.current_hand.append(answer)
         total = sum(self.current_hand)
         if total == 21:
             self.display_cards()
             print('\nYou have 21\n')
+            print('-------------------------')
+
             sleep(2)
             return False
         elif total > 21:
-            print('Bust!\nYou had {total}\n'.format(total=total))
+            print('\nBust!\nYou had {total}\n'.format(total=total))
+            print('-------------------------')
+
             return False
         else:
             self.display_cards()
-            print('Totaling {total}\n'.format(total=total))
+            print('\nTotaling {total}\n'.format(total=total))
+            print('-------------------------')
+
             return True
 
     def hit(self, deck):
@@ -138,15 +156,24 @@ class Player:
         while answer != 'h' and answer != 's':
             answer = input('Must choose (h) for Hit and (s) for Stand ')
         if answer == 'h':
+            self.clear()
             card_suit, card_number = self.draw_card(deck)
+            print('{name} draws a'.format(name=self.name))
             print('{number} of {suit}\n'.format(suit=card_suit, number=card_number))
             return True
+        self.clear()
+        sleep(2)
         return False
 
     def check_split(self):
+        if self.money == 0:
+            return False
         if self.current_hand.count(self.current_hand[0]) == 2:
             return True
         return False
+
+    def clear(self):
+        print('\n' * 50)
 
 
 class Dealer:
@@ -176,10 +203,15 @@ class Dealer:
         self.display_cards()
 
     def display_cards(self):  # Dealer can only show one card at first
+        self.clear()
+        sleep(1)
+        print('-------------------------')
         print('The Dealer is showing')
         print('{number} of {suit}'.format(number=self.cards[1][1], suit=self.cards[1][0]))
+        print('-------------------------')
 
     def display_all_cards(self):
+        print('-------------------------')
         print('The Dealer cards are:')
         for card in self.cards:
             print('{number} of {suit}'.format(number=card[1], suit=card[0]))
@@ -228,15 +260,19 @@ class Dealer:
         if total == 21:
             self.display_all_cards()
             print('Dealer has 21')
+            print('-------------------------')
+            sleep(2)
             return False
         elif total > 21:
             self.display_all_cards()
-            print('\nBust!')
-            # player.money = bet ** 2
+            print('\nDealer Bust!')
+            print('-------------------------')
+            sleep(2)
             return False
         else:
             self.display_all_cards()
             print('Totaling {total}\n'.format(total=total))
+            print('-------------------------')
             sleep(2)
             return True
 
@@ -249,6 +285,9 @@ class Dealer:
             return True
         return False
 
+    def clear(self):
+        print('\n' * 50)
+
 
 class Deck:
 
@@ -258,7 +297,7 @@ class Deck:
                       'hearts': [2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King', 'Ace'],
                       'diamonds': [2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King', 'Ace']}
 
-        self.values = {2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10, 11: 11,
+        self.values = {1:1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10, 11: 11,
                        'Jack': 10, 'Queen': 10, 'King': 10, 'Ace': [1, 11]}
 
     def check_deck(self):
