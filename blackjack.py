@@ -11,10 +11,10 @@ def main():
         while True:
             if player.money < 1:
                 break
-            bet = player.player_bet()
+            player.player_bet()
             clear()
             player.set_up(deck)
-            if not player.check_blackjack(bet):
+            if not player.check_blackjack():
                 break
             print('')
             dealer.set_up(deck)
@@ -28,13 +28,13 @@ def main():
                         clear()
                         player.current_hand = [player.current_hand[0]]
                         card = player.cards.pop(0)
-                        split_hand = split(bet, player, deck, card=card)
+                        split_hand = split(player, deck, card=card)
                         break
                 break
             while True:  # Players turn
-                if not player.check_cards(deck, bet):  # Player hand
+                if not player.check_cards(deck):  # Player hand
                     break
-                if not player.hit(deck):
+                if not player.hit(deck):  # Stand/ Double Down will break loop
                     break
             player_amount = sum(player.current_hand)
             split_hand_amount = None
@@ -53,8 +53,10 @@ def main():
                 if not dealer.hit(deck):
                     break
             clear()
-            sleep(2)
-            win_loss(player, dealer, bet, split_hand)
+            sleep(1)
+            win_loss(player, dealer,split_hand)
+            if player.money > player.max_money:
+                player.max_money = player.money
             break
         if not replay(player):
             break
@@ -78,19 +80,19 @@ def win_loss(player, dealer, bet, split_hand=None):
         print('{name} has {points} '.format(name=split_hand.name, points=split_hand_total))
         print('{name} has {points} \n'.format(name=dealer.name, points=dealer_total))
         if dealer_total > 21:
-            player.money += bet * 2
+            player.money += player.bet * 2
             player.win += 1
             player.high_score += 1
-            print('You win {bet} '.format(bet=bet * 2))
+            print('You win {bet} '.format(bet=player.bet * 2))
             if player.win >= player.high_score:
                 print('New win streak, {streak} games won in a row! '.format(streak=player.high_score))
                 print('----------------------------------------------')
         elif split_hand_total == dealer_total:
-            player.money += bet
+            player.money += player.bet
             print('Draw\nBet returned ')
             player.win = 0
         elif split_hand_total > dealer_total:
-            print('You win {bet} '.format(bet=bet * 2))
+            print('You win {bet} '.format(bet=player.bet * 2))
             player.win += 1
             player.high_score += 1
             player.money += bet * 2
@@ -110,23 +112,23 @@ def win_loss(player, dealer, bet, split_hand=None):
         print('----------------------------------------------')
         player.win = 0
     if dealer_total > 21:
-        player.money += bet * 2
+        player.money += player.bet * 2
         player.win += 1
         player.high_score += 1
-        print('You win {bet} '.format(bet=bet * 2))
+        print('You win {bet} '.format(bet=player.bet * 2))
         if player.win >= player.high_score:
             print('New win streak, {streak} games won in a row! '.format(streak=player.high_score))
             print('----------------------------------------------')
     elif player_total == dealer_total:
-        player.money += bet
+        player.money += player.bet
         print('Draw\nBet returned ')
         print('----------------------------------------------')
         player.win = 0
     elif player_total > dealer_total:
-        print('You win {bet} '.format(bet=bet * 2))
+        print('You win {bet} '.format(bet=player.bet * 2))
         player.win += 1
         player.high_score += 1
-        player.money += bet * 2
+        player.money += player.bet * 2
         if player.win >= player.high_score:
             print('New win streak, {streak} games won in a row! '.format(streak=player.high_score))
             print('----------------------------------------------')
@@ -137,7 +139,7 @@ def win_loss(player, dealer, bet, split_hand=None):
 
 
 def create_player():
-    name = input('What is your name: ')
+    name = input('What is your name: ').title().strip()
     player = Player(name)
     return player
 
@@ -145,6 +147,7 @@ def create_player():
 def replay(player):
     if player.money < 1:
         print('You have no money left to bet with\n')
+        print('{name} had a maximum of ${money}\n'.format(name=player.name, money=player.max_money))
         print('Thanks for playing!')
         return False
     answer = input('\nPlay again? (y/n) \n\n').lower()
@@ -153,23 +156,24 @@ def replay(player):
     if answer == '' or answer == 'y':
         clear()
         return True
+    print('{name} had a maximum of ${money}'.format(name=player.name, money=player.max_money))
     print('Thanks for playing!')
     return False
 
 
-def split(bet, player, deck, card):
+def split(player, deck, card):
     split_hand = Player('Second Hand')
     split_hand.cards = [card]
     while True:
-        player.money -= bet
+        player.money -= player.bet
         split_hand.current_hand = [card[1]]
         split_hand.draw_card(deck, display=True)
-        if not split_hand.check_blackjack(bet):
-            player.money += bet * 2
+        if not split_hand.check_blackjack():
+            player.money += player.bet * 2
             break
         while True:  # Players second hand
             print('\nSecond Hand\n')
-            if not split_hand.check_cards(deck, bet):
+            if not split_hand.check_cards(deck):
                 break
             if not split_hand.hit(deck):
                 break

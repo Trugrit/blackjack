@@ -12,6 +12,8 @@ class Player:
         self.win = 0
         self.high_score = 0
         self.test = []
+        self.max_money = 200
+        self.bet = 0
 
     def set_up(self, deck):
         self.current_hand = []
@@ -55,66 +57,67 @@ class Player:
                     except ValueError:
                         print('Bet must be a number!')
                 self.money -= bet
+                self.bet = bet
                 break
         return bet
 
-    def check_blackjack(self, bet=0, display=True):
+    def check_blackjack(self, display=True):
         if len(self.current_hand) == 2:
             if 'Ace' in self.current_hand and 10 in self.current_hand:
                 self.current_hand = [21]
                 self.win += 1
                 self.high_score += 1
                 if display:
-                    print('BlackJack!\n\nYou win {bet}\n'.format(bet=bet * 2))
+                    print('BlackJack!\n\nYou win {bet}\n'.format(bet=self.bet * 2))
                     if self.win >= self.high_score:
                         print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
                 print('-------------------------')
-                self.money += bet * 2
+                self.money += self.bet * 2
                 return False
             elif 'Ace' in self.current_hand and 'Queen' in self.current_hand:
                 self.current_hand = [21]
                 self.win += 1
                 self.high_score += 1
-                print('BlackJack!\n\nYou win {bet}\n'.format(bet=bet * 2))
+                print('BlackJack!\n\nYou win {bet}\n'.format(bet=self.bet * 2))
                 if display:
                     if self.win >= self.high_score:
                         print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
                 print('-------------------------')
-                self.money += bet * 2
+                self.money += self.bet * 2
                 return False
             elif 'Ace' in self.current_hand and 'King' in self.current_hand:
                 self.current_hand = [21]
                 self.win += 1
                 self.high_score += 1
                 if display:
-                    print('BlackJack!\n\nYou win {bet}\n'.format(bet=bet * 2))
+                    print('BlackJack!\n\nYou win {bet}\n'.format(bet=self.bet * 2))
                     if self.win >= self.high_score:
                         print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
                 print('-------------------------')
-                self.money += bet * 2
+                self.money += self.bet * 2
                 return False
             elif 'Ace' in self.current_hand and 'Jack' in self.current_hand:
                 self.current_hand = [21]
                 self.win += 1
                 self.high_score += 1
                 if display:
-                    print('BlackJack!\n\nYou win {bet}\n'.format(bet=bet * 2))
+                    print('BlackJack!\n\nYou win {bet}\n'.format(bet=self.bet * 2))
                     if self.win >= self.high_score:
                         print('New win streak, {streak} games won in a row! '.format(streak=self.high_score))
                 print('-------------------------')
-                self.money += bet * 2
+                self.money += self.bet * 2
                 return False
         return True
 
-    def check_cards(self, deck, bet):
+    def check_cards(self, deck):
         sleep(2)
         print('-------------------------')
         if len(self.current_hand) == 1:  # Check for one card meaning cards were split
             self.draw_card(deck, display=True)
-            if not self.check_blackjack(bet, display=True):
-                    return False
+            if not self.check_blackjack(self.bet, display=True):
+                return False
         self.current_hand = []
-        for number in self.cards:
+        for number in self.cards:  # sorting cards and evaluating values
             if number[1] == 'Ace':
                 continue
             else:
@@ -136,34 +139,51 @@ class Player:
             self.display_cards()
             print('\nYou have 21\n')
             print('-------------------------')
-
             sleep(2)
             return False
         elif total > 21:
             print('\nBust!\nYou had {total}\n'.format(total=total))
             print('-------------------------')
-
             return False
         else:
             self.display_cards()
             print('\nTotaling {total}\n'.format(total=total))
             print('-------------------------')
-
             return True
 
     def hit(self, deck):
-        answer = input('Hit or Stand  (h/s) \n')
-        while answer != 'h' and answer != 's':
-            answer = input('Must choose (h) for Hit and (s) for Stand ')
-        if answer == 'h':
-            self.clear()
-            card_suit, card_number = self.draw_card(deck)
-            print('{name} draws a'.format(name=self.name))
-            print('{number} of {suit}\n'.format(suit=card_suit, number=card_number))
-            return True
-        self.clear()
-        sleep(2)
-        return False
+        if self.money >= self.bet:
+            answer = input('Hit or Stand or Double Down  (h/s/dd) \n')
+            while answer != 'h' and answer != 's' and answer != 'dd':
+                answer = input('Must choose (h) for Hit and (s) for Stand or (dd) for Double Down')
+            if answer == 'h':
+                self.clear()
+                card_suit, card_number = self.draw_card(deck)
+                print('{name} draws a'.format(name=self.name))
+                print('{number} of {suit}\n'.format(suit=card_suit, number=card_number))
+                return True
+            elif answer == 'dd':
+                self.money -= self.bet
+                self.bet = self.bet * 2
+                self.clear()
+                card_suit, card_number = self.draw_card(deck)
+                print('{name} draws a'.format(name=self.name))
+                print('{number} of {suit}\n'.format(suit=card_suit, number=card_number))
+                self.check_cards(deck)
+                sleep(2)
+                return False
+        else:
+            answer = input('Hit or Stand  (h/s) \n')
+            while answer != 'h' and answer != 's':
+                answer = input('Must choose (h) for Hit and (s) for Stand ')
+                if answer == 'h':
+                    self.clear()
+                    card_suit, card_number = self.draw_card(deck)
+                    print('{name} draws a'.format(name=self.name))
+                    print('{number} of {suit}\n'.format(suit=card_suit, number=card_number))
+                    return True
+            sleep(2)
+            return False
 
     def check_split(self):
         if self.money == 0:
@@ -297,7 +317,7 @@ class Deck:
                       'hearts': [2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King', 'Ace'],
                       'diamonds': [2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King', 'Ace']}
 
-        self.values = {1:1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10, 11: 11,
+        self.values = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10, 11: 11,
                        'Jack': 10, 'Queen': 10, 'King': 10, 'Ace': [1, 11]}
 
     def check_deck(self):
