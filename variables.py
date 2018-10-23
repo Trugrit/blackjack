@@ -176,12 +176,12 @@ class Player:
             answer = input('Hit or Stand  (h/s) \n')
             while answer != 'h' and answer != 's':
                 answer = input('Must choose (h) for Hit and (s) for Stand ')
-                if answer == 'h':
-                    self.clear()
-                    card_suit, card_number = self.draw_card(deck)
-                    print('{name} draws a'.format(name=self.name))
-                    print('{number} of {suit}\n'.format(suit=card_suit, number=card_number))
-                    return True
+            if answer == 'h':
+                self.clear()
+                card_suit, card_number = self.draw_card(deck)
+                print('{name} draws a'.format(name=self.name))
+                print('{number} of {suit}\n'.format(suit=card_suit, number=card_number))
+                return True
             sleep(2)
             return False
 
