@@ -1,4 +1,4 @@
-from variables import Player, Dealer, Deck, sleep
+from variables import Player, Dealer, Deck, sleep, path
 
 
 def main():
@@ -11,9 +11,11 @@ def main():
         while True:
             if player.money < 1:
                 break
-            player.player_bet()
+            bet = player.player_bet()
             clear()
-            player.set_up(deck)
+            # player.set_up(deck)
+            player.cards = [['H', 10], ['T', 'Ace']]
+            player.current_hand = [card[1] for card in player.cards]
             if not player.check_blackjack():
                 break
             print('')
@@ -54,13 +56,12 @@ def main():
                     break
             clear()
             sleep(1)
-            win_loss(player, dealer,split_hand)
-            if player.money > player.max_money:
-                player.max_money = player.money
+            win_loss(player, dealer, bet, split_hand)
             break
+        if player.money > player.max_money:
+            player.max_money = player.money
         if not replay(player):
             break
-
 
 def intro():
     print("------------------------------")
@@ -68,7 +69,7 @@ def intro():
     print("------------------------------")
 
 
-def win_loss(player, dealer, bet, split_hand=None):
+def win_loss(player, dealer, bet, split_hand):
     player_total = sum(player.current_hand)
     dealer_total = sum(dealer.current_hand)
     dealer.display_all_cards()
@@ -156,13 +157,18 @@ def replay(player):
     if answer == '' or answer == 'y':
         clear()
         return True
+    if player.max_money > player.highscore:
+        print('New High Score of {money}!'.format(money=player.max_money))
+        player.highscore = player.max_money
+        with open(path.join(player.dir, 'highscore.txt'), 'r+') as f:
+            f.write(str(player.max_money))
     print('{name} had a maximum of ${money}'.format(name=player.name, money=player.max_money))
     print('Thanks for playing!')
     return False
 
 
 def split(player, deck, card):
-    split_hand = Player('Second Hand')
+    split_hand = Player("{player}'s Second Hand".format(player=player.name))
     split_hand.cards = [card]
     while True:
         player.money -= player.bet

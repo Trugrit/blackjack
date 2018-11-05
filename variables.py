@@ -1,5 +1,6 @@
 from random import choice
 from time import sleep
+from os import path
 
 
 class Player:
@@ -14,6 +15,7 @@ class Player:
         self.test = []
         self.max_money = 200
         self.bet = 0
+        self.load_data()
 
     def set_up(self, deck):
         self.current_hand = []
@@ -41,7 +43,8 @@ class Player:
         for card in self.cards:
             if card[1] == 11 or card[1] == 1:
                 print('{number} of {suit}'.format(number='Ace', suit=card[0]))
-            print('{number} of {suit}'.format(number=card[1], suit=card[0]))
+            else:
+                print('{number} of {suit}'.format(number=card[1], suit=card[0]))
 
     def player_bet(self):
         print('You have {money} to bet'.format(money=self.money))
@@ -114,7 +117,7 @@ class Player:
         print('-------------------------')
         if len(self.current_hand) == 1:  # Check for one card meaning cards were split
             self.draw_card(deck, display=True)
-            if not self.check_blackjack(self.bet, display=True):
+            if not self.check_blackjack(self.bet):
                 return False
         self.current_hand = []
         for number in self.cards:  # sorting cards and evaluating values
@@ -129,7 +132,12 @@ class Player:
                 else:
                     self.display_cards()
                     print('Current total is {total} '.format(total=sum(self.current_hand)))
-                    answer = int(input('Would you like your ace to be an 11 or 1? '))
+                    answer = ''
+                    while answer != 11 and answer != 1:
+                        try:
+                            answer = int(input('Would you like your ace to be an 11 or 1? '))
+                        except ValueError:
+                            print('Must be a number!')
                     number[1] = answer
                     self.clear()
                     sleep(2)
@@ -194,6 +202,16 @@ class Player:
 
     def clear(self):
         print('\n' * 50)
+
+    def load_data(self):
+        # load high score
+        HS_FILE = 'highscore.txt'
+        self.dir = path.dirname(__file__)
+        with open(path.join(self.dir, HS_FILE), 'r+') as f:
+            try:
+                self.highscore = int(f.read())
+            except:
+                self.highscore = 0
 
 
 class Dealer:
